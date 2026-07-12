@@ -56,7 +56,7 @@
                     body: JSON.stringify({ description: desc })
                 });
                 
-                const data = await response.visit();
+                const data = await response.json();
                 list.innerHTML = '';
                 
                 data.hashtags.forEach(tag => {
