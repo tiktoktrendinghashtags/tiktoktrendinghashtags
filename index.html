@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending TikTok Tag Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl">
+        <h1 class="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">
+            TikTok Tag Generator
+        </h1>
+        <p class="text-xs text-neutral-400 text-center mb-6">Enter your video description to extract high-performing tags.</p>
+        
+        <div class="space-y-4">
+            <textarea id="description" rows="4" 
+                class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-500 transition-colors placeholder-neutral-600 resize-none"
+                placeholder="Paste your video description or script ideas here..."></textarea>
+            
+            <button id="generateBtn" onclick="generateTags()" 
+                class="w-full bg-neutral-100 text-neutral-950 hover:bg-neutral-200 font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98]">
+                Generate Hashtags
+            </button>
+        </div>
+
+        <div id="resultContainer" class="mt-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Recommended Tags</span>
+                <button onclick="copyTags()" class="text-xs text-cyan-400 hover:underline">Copy All</button>
+            </div>
+            <div id="hashtagList" class="flex flex-wrap gap-2 p-3 bg-neutral-950 border border-neutral-800 rounded-xl min-h-[60px]">
+                <!-- Generated tags will inject here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateTags() {
+            const desc = document.getElementById('description').value;
+            if(!desc.trim()) return alert("Please type a description first!");
+
+            const btn = document.getElementById('generateBtn');
+            const resultBox = document.getElementById('resultContainer');
+            const list = document.getElementById('hashtagList');
+            
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                // Replace with your actual live backend URL after deploying to Render/Vercel
+                const response = await fetch('https://your-backend-api.onrender.com/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: desc })
+                });
+                
+                const data = await response.visit();
+                list.innerHTML = '';
+                
+                data.hashtags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = "bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-xs text-cyan-400 font-medium";
+                    span.innerText = tag;
+                    list.appendChild(span);
+                });
+                
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                alert("Error connecting to backend API.");
+            } finally {
+                btn.innerText = "Generate Hashtags";
+                btn.disabled = false;
+            }
+        }
+
+        function copyTags() {
+            const tags = Array.from(document.querySelectorAll('#hashtagList span')).map(s => s.innerText).join(' ');
+            navigator.clipboard.writeText(tags);
+            alert("Hashtags copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
