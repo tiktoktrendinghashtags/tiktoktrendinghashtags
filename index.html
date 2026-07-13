@@ -12,31 +12,72 @@
         <h1 class="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">
             TikTok Tag Generator
         </h1>
-        <p class="text-xs text-neutral-400 text-center mb-6">Enter your video description to extract high-performing tags.</p>
+        <p class="text-xs text-neutral-400 text-center mb-6">Enter your video description or pick a trending niche below.</p>
         
+        <!-- NEW: Category Quick Chips -->
+        <div class="mb-5">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-neutral-500 block mb-2">Explore Hot Niches</span>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="loadNiche('motivation')" class="bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-neutral-300">
+                    💡 Motivation
+                </button>
+                <button onclick="loadNiche('finance')" class="bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-neutral-300">
+                    💰 Finance
+                </button>
+                <button onclick="loadNiche('business')" class="bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-neutral-300">
+                    🚀 Business
+                </button>
+            </div>
+        </div>
+
         <div class="space-y-4">
             <textarea id="description" rows="4" 
                 class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-500 transition-colors placeholder-neutral-600 resize-none"
                 placeholder="Paste your video description or script ideas here..."></textarea>
             
             <button id="generateBtn" onclick="generateTags()" 
-                class="w-full bg-neutral-100 text-neutral-950 hover:bg-neutral-200 font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98]">
+                class="w-full bg-neutral-100 text-neutral-950 hover:bg-neutral-200 font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] cursor-pointer">
                 Generate Hashtags
             </button>
         </div>
 
         <div id="resultContainer" class="mt-6 hidden">
             <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Recommended Tags</span>
-                <button onclick="copyTags()" class="text-xs text-cyan-400 hover:underline">Copy All</button>
+                <span id="resultTitle" class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Recommended Tags</span>
+                <button onclick="copyTags()" class="text-xs text-cyan-400 hover:underline cursor-pointer">Copy All</button>
             </div>
             <div id="hashtagList" class="flex flex-wrap gap-2 p-3 bg-neutral-950 border border-neutral-800 rounded-xl min-h-[60px]">
-                <!-- Generated tags will inject here -->
+                <!-- Generated tags inject here -->
             </div>
         </div>
     </div>
 
     <script>
+        // Static curation of high-performing pillar tags for quick use
+        const nicheTags = {
+            motivation: ["#motivation", "#mindset", "#discipline", "#success", "#quote", "#inspiration", "#fyp", "#trending"],
+            finance: ["#moneytok", "#investing", "#financialfreedom", "#wealthmindset", "#personalfinance", "#fintok", "#fyp", "#viral"],
+            business: ["#smallbusiness", "#entrepreneur", "#sidehustle", "#startup", "#businessowner", "#businesstips", "#fyp", "#foryou"]
+        };
+
+        function loadNiche(niche) {
+            const list = document.getElementById('hashtagList');
+            const resultBox = document.getElementById('resultContainer');
+            const title = document.getElementById('resultTitle');
+            
+            list.innerHTML = '';
+            title.innerText = `${niche} Core Pillars`;
+            
+            nicheTags[niche].forEach(tag => {
+                const span = document.createElement('span');
+                span.className = "bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-xs text-cyan-400 font-medium";
+                span.innerText = tag;
+                list.appendChild(span);
+            });
+            
+            resultBox.classList.remove('hidden');
+        }
+
         async function generateTags() {
             const desc = document.getElementById('description').value;
             if(!desc.trim()) return alert("Please type a description first!");
@@ -44,12 +85,14 @@
             const btn = document.getElementById('generateBtn');
             const resultBox = document.getElementById('resultContainer');
             const list = document.getElementById('hashtagList');
+            const title = document.getElementById('resultTitle');
             
             btn.innerText = "Processing...";
             btn.disabled = true;
+            title.innerText = "Recommended Tags";
 
             try {
-                // Replace with your actual live backend URL after deploying to Render/Vercel
+                // Ensure your custom render address stays active here
                 const response = await fetch('https://tiktoktrendinghashtags.onrender.com/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -77,6 +120,7 @@
 
         function copyTags() {
             const tags = Array.from(document.querySelectorAll('#hashtagList span')).map(s => s.innerText).join(' ');
+            if(!tags) return;
             navigator.clipboard.writeText(tags);
             alert("Hashtags copied to clipboard!");
         }
